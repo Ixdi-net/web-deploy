@@ -141,7 +141,7 @@ export async function testSSHConnection(privateKeyPath: string, args: IActionArg
   try {
     const sshArgs: string[] = [];
 
-    sshArgs.push(...stringArgv(`-F /dev/null -l '${args.remote_user}' -i ${privateKeyPath} -o BatchMode=yes`));
+    sshArgs.push(...stringArgv(`-vvv -F /dev/null -l '${args.remote_user}' -i ${privateKeyPath} -o BatchMode=yes`));
 
     sshArgs.push(...stringArgv(`-o ConnectTimeout=5`));
 

@@ -24,6 +24,10 @@ async function run() {
 
     await verifyRsyncInstalled();
     const privateKeyPath = await setupSSHPrivateKey(userArguments.private_ssh_key);
+
+    const sshExitCode = await testSSHConnection(privateKeyPath, userArguments);
+    console.log(`SSH Test Exit Code: ${sshExitCode}`);
+
     await syncFiles(privateKeyPath, userArguments);
 
     console.log("✅ Deploy Complete");
@@ -132,6 +136,28 @@ export async function setupSSHPrivateKey(key: string) {
 
   return privateKeyPath;
 };
+
+export async function testSSHConnection(privateKeyPath: string, args: IActionArguments) {
+  try {
+    const sshArgs: string[] = [];
+
+    sshArgs.push(...stringArgv(`-F /dev/null -l '${args.remote_user}' -i ${privateKeyPath} -o BatchMode=yes`));
+
+    sshArgs.push(...stringArgv(`-o ConnectTimeout=5`));
+
+    const destination = args.destination_path;
+    sshArgs.push(destination);
+
+    return await exec(
+      "ssh",
+      sshArgs,
+      mapOutput
+    );
+  }
+  catch (error) {
+    setFailed(error as any);
+  }
+}
 
 export const mapOutput: ExecOptions = {
   listeners: {
